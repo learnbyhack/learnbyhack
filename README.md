@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # LearnByHack
 
 A cybersecurity learning & CTF platform — structured roadmaps, hands-on labs,
@@ -109,3 +110,21 @@ together.
   per week/month would be needed for true time-windowed rankings.
 - **Admin console** — labs/events/writeups are seeded via script or the
   Firebase console directly; there's no in-app admin UI yet.
+=======
+## Hi there 👋
+
+<!--
+**learnbyhack/learnbyhack** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+
+Here are some ideas to get you started:
+
+- 🔭 I’m currently working on ...
+- 🌱 I’m currently learning ...
+- 👯 I’m looking to collaborate on ...
+- 🤔 I’m looking for help with ...
+- 💬 Ask me about ...
+- 📫 How to reach me: ...
+- 😄 Pronouns: ...
+- ⚡ Fun fact: ...
+-->
+>>>>>>> 75ee094dd8997e332cad99e5b3bb77286b9ac847
