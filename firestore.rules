@@ -1,0 +1,115 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Public profile info, readable by anyone (dashboard, leaderboard, profile pages).
+    // A user may edit their own profile fields, but never their own xp, coins, level,
+    // role, completedLabs, or achievements — those are only ever written by Cloud
+    // Functions using the Admin SDK, which bypasses these rules entirely.
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'user'
+        && request.resource.data.xp == 0
+        && request.resource.data.coins == 0;
+      allow update: if isOwner(userId)
+        && request.resource.data.xp == resource.data.xp
+        && request.resource.data.coins == resource.data.coins
+        && request.resource.data.level == resource.data.level
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.completedLabs == resource.data.completedLabs
+        && request.resource.data.achievements == resource.data.achievements;
+      allow delete: if false;
+    }
+
+    // Lab metadata (title, description, xp, hints, tags) — public read, admin write.
+    // The flag value itself is never stored here.
+    match /labs/{labId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Flag hashes. No client, authenticated or not, can ever read this collection.
+    // Only the submitFlag Cloud Function (Admin SDK) can read it.
+    match /labFlags/{labId} {
+      allow read: if false;
+      allow write: if isAdmin();
+    }
+
+    // Course / roadmap / event / writeup content — public read, admin write.
+    match /roadmaps/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /learning_paths/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /events/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /writeups/{id} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.authorId == request.auth.uid);
+    }
+    match /announcements/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /badges/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /achievements/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Leaderboard is a derived read model; written only by Cloud Functions.
+    match /leaderboard/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Submissions are written only by Cloud Functions (Admin SDK). A user may
+    // read only their own submission history.
+    match /submissions/{id} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    // Per-user notifications: only the owner can read or mark them read.
+    match /notifications/{id} {
+      allow read, update: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow write: if isAdmin();
+    }
+
+    // Contact form submissions — anyone can create, only admins can read.
+    match /contactMessages/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

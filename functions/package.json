@@ -1,0 +1,17 @@
+{
+  "name": "learnbyhack-functions",
+  "description": "LearnByHack backend — Firebase Cloud Functions (Node.js)",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions,firestore,auth",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "seed": "node seed/seedLabFlags.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.3.1",
+    "firebase-functions": "^5.0.1"
+  },
+  "private": true
+}
